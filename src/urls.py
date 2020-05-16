@@ -18,10 +18,16 @@ from django.urls import path, include
 
 from src.apps.core import views
 
-BASE_VERSION = 'api/v1/'
+admin.autodiscover()
+
+BASE_VERSION = 'api/v1'
 
 urlpatterns = [
     path('', views.home, name='home'),
     path('admin/', admin.site.urls),
-    path('api/', include('rest_framework.urls'))
+    path(f'api-auth/', include('rest_framework.urls')),
+    path(f'{BASE_VERSION}/image/',
+         include(('src.apps.image.api.urls', 'image'), namespace='image')),
+    path(f'{BASE_VERSION}/home/',
+         include(('src.apps.home.api.urls', 'home'), namespace='homepage')),
 ]
