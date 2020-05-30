@@ -26,7 +26,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 # CORS
 CORS_ORIGIN_WHITELIST = ["http://127.0.0.1:5000", "http://localhost:5000"]
 CORS_ALLOW_HEADERS = default_headers + ('if-modified-since', 'if-none-match',
