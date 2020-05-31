@@ -1,0 +1,183 @@
+# Python CircleCI 2.0 configuration file
+#
+version: 2.1
+
+orbs:
+  codecov: codecov/codecov@1.0.2
+
+references:
+  working_directory: &working_directory
+    ~/thefreezar-api
+
+  tmp_working_space: &tmp_working_space
+    ~/thefreezar-api/tmp
+
+  envs: &envs
+    DJANGO_SETTINGS_MODULE: src.settings
+
+  attach_workspace: &attach_workspace
+    attach_workspace:
+      at: *tmp_working_space
+
+  save_cache: &save_cache
+    save_cache:
+      name: 'Saving pipenv cache'
+      key: v1-dependencies-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+      paths:
+        - $(python3 -m pipenv --venv)
+
+  restore_cache: &restore_cache
+    restore_cache:
+      name: 'Restoring pipenv cache'
+      keys:
+        - v1-dependencies-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+        - v1-dependencies-
+
+  restore_repo: &restore_repo
+    restore_cache:
+      name: 'Restoring Directory'
+      keys:
+        - repo-v1-{{ .Branch }}-{{ .Revision }}
+        - repo-v1-{{ .Branch }}
+        - repo-v1-
+
+  save_repo: &save_repo
+    save_cache:
+      name: 'Saving Directory'
+      key: repo-v1-{{ .Branch }}-{{ .Revision }}
+      paths:
+        - .
+
+commands:
+  cmd_wait_for_database:
+    description: "Waiting for Postgres to be ready."
+    steps:
+      - run: dockerize -wait tcp://database:5432 -timeout 1m
+
+  cmd_install_dependencies:
+    description: "Install project dependencies"
+    steps:
+      - run: pipenv install --system  --deploy --ignore-pipfile
+
+  cmd_install_pipenv_and_create_requirement_file:
+    description: "Install Pipenv and create requirement.txt"
+    steps:
+      - run: sudo pip install pipenv
+      - run: pipenv lock -r > requirements.txt
+
+  cmd_run_tests:
+    description: "Install project dependencies and run tests"
+    steps:
+      - cmd_install_dependencies
+      - run: pytest
+      - codecov/upload:
+          file: coverage.xml
+
+  cmd_deploy_to_heroku:
+    description: "Build and deploy to heroku"
+    steps:
+      - cmd_install_dependencies
+      - run: env >> .env
+      - run:
+          name: Login to heroku registry
+          command: |
+            docker login --username=$HEROKU_LOGIN --password=$HEROKU_API_KEY \
+            registry.heroku.com
+      - run:
+          name: Build, Tag and push docker image to heroku container registory
+          command: |
+            docker build -t registry.heroku.com/$HEROKU_APP_NAME/web -f \
+            Docker/Dockerfile . && docker push registry.heroku.com/$HEROKU_APP_NAME/web
+
+      - run:
+          name: Install heroku CLI and Release app
+          command: |
+            curl https://cli-assets.heroku.com/install.sh | sh &&
+            heroku container:release web --app $HEROKU_APP_NAME
+
+executors:
+  default_executor:
+    working_directory: *working_directory
+    environment: *envs
+    docker:
+      # specify the version you desire here
+      - image: circleci/python:3.7
+        environment:
+          APP_SECRET: ${APP_SECRET}
+          DB_NAME: thefreezar_api
+          DB_PASS: root_5432
+          DB_HOST: database
+          DB_USER: root
+          CLOUDINARY_NAME: ${CLOUDINARY_NAME}
+          CLOUDINARY_KEY: ${CLOUDINARY_KEY}
+          CLOUDINARY_SECRET: ${CLOUDINARY_SECRET}
+          RABBITMQ_HOST: ${RABBITMQ_HOST}
+          RABBITMQ_USER: ${RABBITMQ_USER}
+          RABBITMQ_PWD: ${RABBITMQ_PWD}
+          RABBITMQ_VHOST: ${RABBITMQ_VHOST}
+          RABBITMQ_PORT: 5672
+
+      # Specify service dependencies here if necessary
+      # CircleCI maintains a library of pre-built images
+      # documented at https://circleci.com/docs/2.0/circleci-images/
+      - image: circleci/postgres:11.5
+        name: database
+        environment:
+          POSTGRES_USER: root
+          POSTGRES_DB: thefreezar_api
+          POSTGRES_PASSWORD: root_5432
+
+
+jobs:
+  checkout_code:
+    executor: default_executor
+    steps:
+      - *restore_repo
+      - *restore_cache
+      - checkout
+      - *save_cache
+      - *save_repo
+
+  install_dependencies:
+    executor: default_executor
+    steps:
+      - *restore_repo
+      - *restore_cache
+      - cmd_install_dependencies
+      - *save_cache
+
+  run_tests:
+    executor: default_executor
+    steps:
+      - *attach_workspace
+      - *restore_repo
+      - *restore_cache
+      - cmd_wait_for_database
+      - cmd_run_tests
+  heroku_deploy:
+    executor: default_executor
+    steps:
+      - checkout
+      - setup_remote_docker
+      - *attach_workspace
+      - cmd_deploy_to_heroku
+
+workflows:
+  version: 2.1
+  build:
+    jobs:
+      - checkout_code
+      - install_dependencies:
+          requires:
+            - checkout_code
+#
+#      - run_tests:
+#          requires:
+#            - install_dependencies
+#          filters:
+#            branches:
+#              ignore:
+#                - master
+      - heroku_deploy:
+          requires:
+            - install_dependencies

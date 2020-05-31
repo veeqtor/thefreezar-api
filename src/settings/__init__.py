@@ -11,8 +11,10 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
-from corsheaders.defaults import default_headers
+
 import cloudinary
+import django_heroku
+from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -26,9 +28,18 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
+
 # CORS
-CORS_ORIGIN_WHITELIST = ["http://127.0.0.1:5000", "http://localhost:5000"]
+CORS_ORIGIN_WHITELIST = [
+    "http://127.0.0.1:5000",
+    "http://localhost:5000",
+]
+
+CORS_ORIGIN_REGEX_WHITELIST = [
+    r"^https?:\/\/(?:www\.|(?!www))thefreezar-(pr-0*[1-9][0-9]*|\w+)\.herokuapp\.com$",
+]
+
 CORS_ALLOW_HEADERS = default_headers + ('if-modified-since', 'if-none-match',
                                         'cache-control')
 CORS_ALLOW_CREDENTIALS = True
@@ -139,7 +150,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, '../static')
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'staticfiles')]
+# STATICFILES_DIRS = [os.path.join(BASE_DIR, 'staticfiles')]
 
 FILE_UPLOAD_HANDLERS = (
     "django.core.files.uploadhandler.TemporaryFileUploadHandler", )
@@ -189,3 +200,5 @@ CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
+
+django_heroku.settings(locals())
