@@ -6,7 +6,7 @@ from src.apps.core.utils.decorators import validate_id
 from src.apps.core.utils.messages import ERRORS
 from src.apps.core.utils.response import ResponseHandler
 from src.apps.image.models import Image
-from src.apps.image.utils.upload import upload_image_file
+from src.apps.image.utils.upload import upload_image_file, delete_image_file
 from src.apps.image.api.serializers import ImageSerializer
 
 
@@ -83,6 +83,9 @@ class ImageRetrieveDestroyView(generics.RetrieveDestroyAPIView):
         """Delete an image"""
 
         instance = self.get_object()
+        if instance:
+            delete_image_file(instance.image_public_id, is_async=False)
+
         self.perform_destroy(instance)
         response = ResponseHandler.response({'data': 'Deleted.'})
         return Response(response)

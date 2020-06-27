@@ -33,3 +33,15 @@ def upload_image(file_path, is_async=True, **kwargs):
     except Exception as e:
         logger.error(f'Could not upload image: {e}')
         return ResponseHandler.raise_error({'file': e})
+
+
+@shared_task(name='delete-image')
+def delete_image(public_id):
+    """Method to Delete image file to cloudinary."""
+    try:
+        cloudinary.uploader.destroy(public_id)
+        logger.info(f'Deleted image')
+
+    except Exception as e:
+        logger.error(f'Could not deleter image: {e}')
+        return ResponseHandler.raise_error({'image': e})

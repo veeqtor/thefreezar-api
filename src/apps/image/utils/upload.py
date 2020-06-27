@@ -6,7 +6,7 @@ from PIL import Image
 
 from src.apps.core.utils.messages import ERRORS
 from src.apps.core.utils.response import ResponseHandler
-from src.apps.core.tasks import upload_image
+from src.apps.core.tasks import upload_image, delete_image
 
 
 def validate_image_file(image_file_obj):
@@ -38,3 +38,10 @@ def upload_image_file(file, is_async=True):
     image, file_path = validate_image_file(file)
     return upload_image.delay(file_path, is_async) \
         if is_async else upload_image(file_path, is_async)
+
+
+def delete_image_file(public_id, is_async=True):
+    """Method to upload image file."""
+
+    return delete_image.delay(public_id) \
+        if is_async else delete_image(public_id)
