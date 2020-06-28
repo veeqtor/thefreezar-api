@@ -30,4 +30,8 @@ urlpatterns = [
          include(('src.apps.image.api.urls', 'image'), namespace='image')),
     path(f'{BASE_VERSION}/home/',
          include(('src.apps.home.api.urls', 'home'), namespace='homepage')),
+    path(
+        f'{BASE_VERSION}/studio/',
+        include(('src.apps.studio_session.api.urls', 'studio_session'),
+                namespace='studio_session')),
 ]

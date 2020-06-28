@@ -2,6 +2,7 @@
 
 from django.db import models
 from src.apps.core.models import BaseAuditableModel
+from src.apps.studio_session.models import StudioSession
 
 
 class Image(BaseAuditableModel):
@@ -29,6 +30,12 @@ class Image(BaseAuditableModel):
                                        max_length=200,
                                        blank=False,
                                        null=False)
+    studio_session_image = models.ForeignKey(
+        StudioSession,
+        related_name='studio_session_image',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True)
 
     @property
     def image_type_str(self):

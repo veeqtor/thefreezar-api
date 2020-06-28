@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from src.apps.user.models import User
 from django.contrib.auth.models import Group
+from django.utils.translation import gettext_lazy as _
 
 
 @admin.register(User)
@@ -17,6 +18,27 @@ class UserAdmin(BaseUserAdmin):
     list_per_page = 25
     list_filter = ('is_staff', 'is_active')
     filter_horizontal = []
+
+    fieldsets = (
+        (None, {
+            'fields': ('email', 'password', 'is_verified')
+        }),
+        (_('Permissions'), {
+            'fields': (
+                'is_active',
+                'is_staff',
+                'is_superuser',
+            )
+        }),
+        (_('Important dates'), {
+            'fields': ('last_login', 'date_joined')
+        }),
+    )
+
+    add_fieldsets = ((None, {
+        'classes': ('wide', ),
+        'fields': ('email', 'password1', 'password2'),
+    }), )
 
 
 admin.site.unregister(Group)

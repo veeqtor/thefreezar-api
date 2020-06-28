@@ -50,8 +50,8 @@ class ImageListCreateView(generics.ListCreateAPIView):
                 instance.image_url = image_res.get('secure_url')
                 instance.save()
                 serializer = self.get_serializer(instance)
-                response = ResponseHandler.response(serializer.data)
-                return Response(response, status=status.HTTP_201_CREATED)
+                return Response(serializer.data,
+                                status=status.HTTP_201_CREATED)
 
         except KeyError:
             return ResponseHandler.raise_error(ERRORS['FILE_03'])
@@ -76,8 +76,7 @@ class ImageRetrieveDestroyView(generics.RetrieveDestroyAPIView):
 
         instance = self.get_object()
         serializer = self.get_serializer(instance)
-        response = ResponseHandler.response(serializer.data)
-        return Response(response)
+        return Response(serializer.data)
 
     def destroy(self, request, *args, **kwargs):
         """Delete an image"""
@@ -87,8 +86,7 @@ class ImageRetrieveDestroyView(generics.RetrieveDestroyAPIView):
             delete_image_file(instance.image_public_id, is_async=False)
 
         self.perform_destroy(instance)
-        response = ResponseHandler.response({'data': 'Deleted.'})
-        return Response(response)
+        return Response({'data': 'Deleted.'})
 
     @validate_id
     def get_object(self):

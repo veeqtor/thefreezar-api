@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     'src.apps.image.apps.ImageConfig',
     'src.apps.home.apps.HomeConfig',
     'src.apps.user.apps.UserConfig',
+    'src.apps.studio_session.apps.StudioSessionConfig',
 ]
 
 MIDDLEWARE = [
@@ -138,7 +139,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Africa/Lagos'
 
 USE_I18N = True
 
@@ -170,13 +171,20 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
     ),
-    'DEFAULT_RENDERER_CLASSES':
-    ('djangorestframework_camel_case.render.CamelCaseJSONRenderer', ),
+    'DEFAULT_RENDERER_CLASSES': (
+        'src.apps.core.renderer.CustomJSONRenderer',
+        'djangorestframework_camel_case.render.CamelCaseJSONRenderer',
+        'djangorestframework_camel_case.render.CamelCaseBrowsableAPIRenderer',
+    ),
     'DEFAULT_PARSER_CLASSES': (
         'djangorestframework_camel_case.parser.CamelCaseFormParser',
         'djangorestframework_camel_case.parser.CamelCaseMultiPartParser',
         'djangorestframework_camel_case.parser.CamelCaseJSONParser',
     ),
+    'DEFAULT_PAGINATION_CLASS':
+    'src.apps.core.pagination.Pagination',
+    'PAGE_SIZE':
+    5
 }
 
 cloudinary.config(cloud_name=os.environ.get('CLOUDINARY_NAME'),
@@ -200,5 +208,7 @@ CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
+
+STUDIO_SESSION_INTERVAL = 15
 
 django_heroku.settings(locals())

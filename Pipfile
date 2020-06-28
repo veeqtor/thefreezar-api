@@ -20,6 +20,7 @@ yapf = "*"
 gunicorn = "*"
 django-heroku = "*"
 psycopg2-binary = "*"
+python-dateutil = "*"
 
 [requires]
 python_version = "3.7"

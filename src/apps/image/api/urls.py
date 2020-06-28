@@ -1,4 +1,4 @@
-"""Viewset for image viewset"""
+"""urls"""
 from src.apps.image.api.views import (ImageListCreateView,
                                       ImageRetrieveDestroyView)
 from django.urls import path, re_path

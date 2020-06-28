@@ -5,7 +5,6 @@ from rest_framework.response import Response
 
 from src.apps.home import models
 from src.apps.home.api import serializers
-from src.apps.core.utils.response import ResponseHandler
 from src.apps.image.models import Image
 
 
@@ -31,6 +30,5 @@ class HomeAPIView(views.APIView):
         hero = serializers.HeroImageSerializer(hero_qs, many=True)
         portfolio = serializers.PortfolioImageSerializer(portfolio_qs,
                                                          many=True)
-        data = {'hero': hero.data, 'portfolio': portfolio.data}
-        response = ResponseHandler.response(data)
+        response = {'hero': hero.data, 'portfolio': portfolio.data}
         return Response(response)
